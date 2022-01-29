@@ -99,52 +99,6 @@ const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-const displayMovements = function (movements) {
-  containerMovements.innerHTML = '';
-
-  movements.forEach(function (mov, i) {
-    const type = mov > 0 ? 'deposit' : 'withdrawal';
-
-    const html = `
-    <div class="movements__row">
-      <div class="movements__type movements__type--${type}">${
-      i + 1
-    } ${type}</div>
-      <div class="movements__value">${mov} ₤</div>
-    </div>`;
-
-    containerMovements.insertAdjacentHTML('afterbegin', html);
-  });
-};
-
-const displayBalance = function (movs) {
-  const balance = movs.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${balance} ₤`;
-};
-
-displayMovements(account1.movements);
-displayBalance(account1.movements);
-
-const calcInsAndOuts = function (movs) {
-  const deposits = movs
-    .filter((mov) => mov > 0)
-    .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${deposits} ₤`;
-
-  const interest = movs
-    .filter((mov) => mov > 0)
-    .map((mov) => (mov / 100) * 1.2)
-    .reduce((acc, mov, i, arr) => acc + mov, 0);
-  labelSumInterest.textContent = `${interest} ₤`;
-
-  const withdrawals = movs
-    .filter((mov) => mov < 0)
-    .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(withdrawals)} ₤`;
-};
-
-calcInsAndOuts(account1.movements);
-
 const createUsernames = function (accts) {
   accts.forEach(function (acc) {
     acc.username = acc.owner
@@ -156,3 +110,67 @@ const createUsernames = function (accts) {
 };
 
 createUsernames(accounts);
+
+btnLogin.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const currAccount = accounts.find(
+    (acc) => acc.username === inputLoginUsername.value
+  );
+
+  if (currAccount?.pin === Number(inputLoginPin.value)) {
+    console.log('123');
+    containerApp.style.opacity = '100';
+    labelWelcome.textContent = `Welcome, ${currAccount.owner.split(' ')[0]}`;
+  }
+
+  inputLoginUsername.value = '';
+  inputLoginPin.value = '';
+  inputLoginPin.blur();
+
+  const displayMovements = function (movements) {
+    containerMovements.innerHTML = '';
+
+    movements.forEach(function (mov, i) {
+      const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+      const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">${
+        i + 1
+      } ${type}</div>
+        <div class="movements__value">${mov} ₤</div>
+      </div>`;
+
+      containerMovements.insertAdjacentHTML('afterbegin', html);
+    });
+  };
+
+  const displayBalance = function (movs) {
+    const balance = movs.reduce((acc, mov) => acc + mov, 0);
+    labelBalance.textContent = `${balance} ₤`;
+  };
+
+  displayMovements(currAccount.movements);
+  displayBalance(currAccount.movements);
+
+  const calcInsAndOuts = function (acc) {
+    const deposits = acc.movements
+      .filter((mov) => mov > 0)
+      .reduce((acc, mov) => acc + mov, 0);
+    labelSumIn.textContent = `${deposits} ₤`;
+
+    const interest = acc.movements
+      .filter((mov) => mov > 0)
+      .map((mov) => (mov / 100) * acc.interestRate)
+      .reduce((acc, mov, i, arr) => acc + mov, 0);
+    labelSumInterest.textContent = `${interest} ₤`;
+
+    const withdrawals = acc.movements
+      .filter((mov) => mov < 0)
+      .reduce((acc, mov) => acc + mov, 0);
+    labelSumOut.textContent = `${Math.abs(withdrawals)} ₤`;
+  };
+
+  calcInsAndOuts(currAccount);
+});
