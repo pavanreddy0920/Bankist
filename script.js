@@ -119,11 +119,16 @@ createUsernames(accounts);
 // UPDATE UI
 ///////////////////////////////////////////////////////////////////////////////
 
-const updateUI = function (acc) {
+const updateUI = function (acc, sorted = false) {
   const displayMovements = function (acc) {
     containerMovements.innerHTML = '';
 
-    acc.movements.forEach(function (mov, i) {
+    const movs =
+      sorted === true
+        ? acc.movements.slice().sort((a, b) => a - b)
+        : acc.movements;
+
+    movs.forEach(function (mov, i) {
       const type = mov > 0 ? 'deposit' : 'withdrawal';
 
       const html = `
@@ -148,7 +153,6 @@ const updateUI = function (acc) {
     const deposits = acc.movements
       .filter((mov) => mov > 0)
       .reduce((acc, mov) => acc + mov, 0);
-    console.log(deposits);
     labelSumIn.textContent = `${deposits} ₤`;
 
     const interest = acc.movements
@@ -163,9 +167,9 @@ const updateUI = function (acc) {
     labelSumOut.textContent = `${Math.abs(withdrawals)} ₤`;
   };
 
-  displayMovements(currAccount);
-  displayBalance(currAccount);
-  calcInsAndOuts(currAccount);
+  displayMovements(acc);
+  displayBalance(acc);
+  calcInsAndOuts(acc);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -183,7 +187,7 @@ btnLogin.addEventListener('click', function (e) {
   if (currAccount?.pin === Number(inputLoginPin.value)) {
     containerApp.style.opacity = '100';
     labelWelcome.textContent = `Welcome, ${currAccount.owner.split(' ')[0]}`;
-    updateUI();
+    updateUI(currAccount);
   }
 
   inputLoginUsername.value = '';
@@ -214,8 +218,25 @@ btnTransfer.addEventListener('click', function (e) {
       ReceiverAccount.movements.push(transferAmt);
       inputTransferTo.value = '';
       inputTransferAmount.value = '';
-      updateUI();
+      updateUI(currAccount);
     }
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// LOAN
+///////////////////////////////////////////////////////////////////////////////
+
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const inputLoanAmt = Number(inputLoanAmount.value);
+  if (
+    inputLoanAmt &&
+    currAccount.movements.some((mov) => mov >= inputLoanAmt * 0.1)
+  ) {
+    currAccount.movements.push(inputLoanAmt);
+    updateUI(currAccount);
+    inputLoanAmount.value = '';
   }
 });
 
@@ -244,4 +265,14 @@ btnClose.addEventListener('click', function (e) {
       labelWelcome.textContent = `Log in to get started`;
     }
   }
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// SORT
+///////////////////////////////////////////////////////////////////////////////
+let sorted = false;
+btnSort.addEventListener('click', function (e) {
+  e.preventDefault();
+  updateUI(currAccount, !sorted);
+  sorted = !sorted;
 });
