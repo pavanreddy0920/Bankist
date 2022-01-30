@@ -218,3 +218,30 @@ btnTransfer.addEventListener('click', function (e) {
     }
   }
 });
+
+///////////////////////////////////////////////////////////////////////////////
+// Close Account
+///////////////////////////////////////////////////////////////////////////////
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  const closeAccountName = inputCloseUsername.value;
+  const closeAccountPin = Number(inputClosePin.value);
+
+  if (closeAccountName && closeAccountPin) {
+    if (
+      currAccount.username === closeAccountName &&
+      currAccount.pin === closeAccountPin
+    ) {
+      const accIndex = accounts.findIndex(
+        (acc) => acc.username === closeAccountName
+      );
+      accounts.splice(accIndex, 1);
+      inputCloseUsername.value = '';
+      inputClosePin.value = '';
+      containerApp.style.opacity = '0';
+      labelWelcome.textContent = `Log in to get started`;
+    }
+  }
+});
