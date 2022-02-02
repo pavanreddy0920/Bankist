@@ -164,7 +164,7 @@ createUsernames(accounts);
 // UPDATE UI
 ///////////////////////////////////////////////////////////////////////////////
 
-const getDateWithTime = function (date, withTime = true) {
+const getDateWithTime = function (date, acc) {
   const calculateDays = Math.round((new Date() - date) / (1000 * 60 * 60 * 24));
   console.log(calculateDays);
 
@@ -172,15 +172,18 @@ const getDateWithTime = function (date, withTime = true) {
   if (calculateDays === 1) return 'Yesterday';
   if (calculateDays <= 7) return `${calculateDays} days ago`;
 
-  const day = `${date.getDate()}`.padStart(2, 0);
-  const month = `${date.getMonth() + 1}`.padStart(2, 0);
-  const year = date.getFullYear();
-  if (withTime) {
-    const hour = `${date.getHours()}`.padStart(2, 0);
-    const min = `${date.getMinutes()}`.padStart(2, 0);
-    return `${day}/${month}/${year}, ${hour}:${min}`;
-  }
-  return `${day}/${month}/${year}`;
+  // const day = `${date.getDate()}`.padStart(2, 0);
+  // const month = `${date.getMonth() + 1}`.padStart(2, 0);
+  // const year = date.getFullYear();
+  // if (withTime) {
+  //   const hour = `${date.getHours()}`.padStart(2, 0);
+  //   const min = `${date.getMinutes()}`.padStart(2, 0);
+  //   return `${day}/${month}/${year}, ${hour}:${min}`;
+  // }
+  // return `${day}/${month}/${year}`;
+
+  const dateDisplay = new Intl.DateTimeFormat(acc.locale).format(date);
+  return dateDisplay;
 };
 
 const updateUI = function (acc, sorted = false) {
@@ -202,7 +205,7 @@ const updateUI = function (acc, sorted = false) {
       } ${type}</div>
       <div class="movements__date">${getDateWithTime(
         new Date(acc.movementsDates[i]),
-        false
+        acc
       )}</div>
         <div class="movements__value">${mov} ₤</div>
       </div>`;
@@ -215,7 +218,12 @@ const updateUI = function (acc, sorted = false) {
     const balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
     acc.balance = balance;
     labelBalance.textContent = `${balance} ₤`;
-    labelDate.textContent = getDateWithTime(new Date());
+    labelDate.textContent = new Intl.DateTimeFormat(acc.locale, {
+      minute: 'numeric',
+      hour: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date());
   };
 
   const calcInsAndOuts = function (acc) {
