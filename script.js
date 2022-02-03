@@ -16,9 +16,9 @@ const account1 = {
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
     '2020-05-08T14:11:59.604Z',
-    '2022-02-01T17:01:17.194Z',
-    '2022-01-30T23:36:17.929Z',
-    '2022-01-31T10:51:36.790Z',
+    '2022-01-30T17:01:17.194Z',
+    '2022-01-31T23:36:17.929Z',
+    '2022-02-01T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -186,6 +186,13 @@ const getDateWithTime = function (date, acc) {
   return dateDisplay;
 };
 
+const formatNumber = function (mov, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(mov);
+};
+
 const updateUI = function (acc, sorted = false) {
   const displayMovements = function (acc) {
     containerMovements.innerHTML = '';
@@ -207,7 +214,11 @@ const updateUI = function (acc, sorted = false) {
         new Date(acc.movementsDates[i]),
         acc
       )}</div>
-        <div class="movements__value">${mov} ₤</div>
+        <div class="movements__value">${formatNumber(
+          mov,
+          acc.locale,
+          acc.currency
+        )}</div>
       </div>`;
 
       containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -217,7 +228,7 @@ const updateUI = function (acc, sorted = false) {
   const displayBalance = function (acc) {
     const balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
     acc.balance = balance;
-    labelBalance.textContent = `${balance} ₤`;
+    labelBalance.textContent = formatNumber(balance, acc.locale, acc.currency);
     labelDate.textContent = new Intl.DateTimeFormat(acc.locale, {
       minute: 'numeric',
       hour: 'numeric',
@@ -230,18 +241,26 @@ const updateUI = function (acc, sorted = false) {
     const deposits = acc.movements
       .filter((mov) => mov > 0)
       .reduce((acc, mov) => acc + mov, 0);
-    labelSumIn.textContent = `${deposits} ₤`;
+    labelSumIn.textContent = formatNumber(deposits, acc.locale, acc.currency);
 
     const interest = acc.movements
       .filter((mov) => mov > 0)
       .map((mov) => (mov / 100) * acc.interestRate)
       .reduce((acc, mov, i, arr) => acc + mov, 0);
-    labelSumInterest.textContent = `${interest} ₤`;
+    labelSumInterest.textContent = formatNumber(
+      interest,
+      acc.locale,
+      acc.currency
+    );
 
     const withdrawals = acc.movements
       .filter((mov) => mov < 0)
       .reduce((acc, mov) => acc + mov, 0);
-    labelSumOut.textContent = `${Math.abs(withdrawals)} ₤`;
+    labelSumOut.textContent = formatNumber(
+      withdrawals,
+      acc.locale,
+      acc.currency
+    );
   };
 
   displayMovements(acc);
