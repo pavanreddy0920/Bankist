@@ -257,7 +257,7 @@ const updateUI = function (acc, sorted = false) {
       .filter((mov) => mov < 0)
       .reduce((acc, mov) => acc + mov, 0);
     labelSumOut.textContent = formatNumber(
-      withdrawals,
+      Math.abs(withdrawals),
       acc.locale,
       acc.currency
     );
@@ -268,11 +268,33 @@ const updateUI = function (acc, sorted = false) {
   calcInsAndOuts(acc);
 };
 
+let intTimer;
+let timer;
+
+const actualTimer = function () {
+  const min = String(Math.trunc(timer / 60)).padStart(2, 0);
+  const sec = String(timer % 60).padStart(2, 0);
+  labelTimer.textContent = `${min}:${sec}`;
+  if (timer === 0) {
+    clearInterval(intTimer);
+    containerApp.style.opacity = '0';
+    labelWelcome.textContent = `Log in to get started`;
+    return;
+  }
+  timer--;
+};
+
+const showTimer = function () {
+  const intTimer = setInterval(actualTimer, 1000);
+  console.log(intTimer);
+  return intTimer;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Login
 ///////////////////////////////////////////////////////////////////////////////
 
-let currAccount;
+let currAccount, timeClear;
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
 
@@ -283,6 +305,10 @@ btnLogin.addEventListener('click', function (e) {
   if (currAccount?.pin === Number(inputLoginPin.value)) {
     containerApp.style.opacity = '100';
     labelWelcome.textContent = `Welcome, ${currAccount.owner.split(' ')[0]}`;
+    clearInterval(timeClear);
+    timer = 300;
+    actualTimer();
+    timeClear = showTimer();
     updateUI(currAccount);
   }
 
@@ -316,6 +342,10 @@ btnTransfer.addEventListener('click', function (e) {
       ReceiverAccount.movementsDates.push(new Date().toISOString());
       inputTransferTo.value = '';
       inputTransferAmount.value = '';
+      clearInterval(timeClear);
+      timer = 300;
+      actualTimer();
+      timeClear = showTimer();
       updateUI(currAccount);
     }
   }
@@ -332,10 +362,16 @@ btnLoan.addEventListener('click', function (e) {
     inputLoanAmt &&
     currAccount.movements.some((mov) => mov >= inputLoanAmt * 0.1)
   ) {
-    currAccount.movements.push(inputLoanAmt);
-    currAccount.movementsDates.push(new Date().toISOString());
-    updateUI(currAccount);
+    setTimeout(function () {
+      currAccount.movements.push(inputLoanAmt);
+      currAccount.movementsDates.push(new Date().toISOString());
+      updateUI(currAccount);
+    }, 3000);
     inputLoanAmount.value = '';
+    clearInterval(timeClear);
+    timer = 300;
+    actualTimer();
+    timeClear = showTimer();
   }
 });
 
